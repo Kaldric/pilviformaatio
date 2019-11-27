@@ -18,4 +18,15 @@ Resources:
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: t3.nano
+      #Name: CallenEC2
+  CallenLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      Name: CallenLB
+      Scheme: internet-facing
+      Subnets: 
+      - subnet-0deb6257
+      - subnet-1629765e
+      - subnet-7b95d91d
+
  
