@@ -1,5 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Callen ensimmäinen PilviMuotoilu
+Outputs:
+  ALBoutput: 
+    Value: !GetAtt CallenLB.DNSName
 Parameters:
   LatestAmiId:
     Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
