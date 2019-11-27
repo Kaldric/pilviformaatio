@@ -5,3 +5,8 @@ Resources:
     Type: AWS::S3::Bucket
     Properties: 
       BucketName: callepilviformaatios3
+  CallenYono:
+    Type: AWS::SQS::Queue
+    Properties: 
+      QueueName: YonoCallen
+ 
