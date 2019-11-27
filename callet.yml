@@ -45,4 +45,3 @@ Resources:
         - subnet-7b95d91d
       SecurityGroups: 
       - !Ref CalleLBSG
-      
