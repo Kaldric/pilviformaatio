@@ -1,0 +1,23 @@
+
+
+  CallEC2SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: EC2:lle SG.
+      GroupName: CallenEC2SG
+      VpcId: vpc-7da4b71b
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId: !GetAtt CalleLBSG.GroupId
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 109.204.206.210/32
+        EC2:n alla:
+        SecurityGroups: 
+      - !Ref CallEC2SG
+
+
+        

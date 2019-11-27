@@ -1,12 +1,12 @@
 AWSTemplateFormatVersion: "2010-09-09"
-Description: Callen ensimmäinen PilviMuotoilu
+Description: Callen ensimmainen PilviMuotoilu
 Outputs:
   ALBoutput: 
     Value: !GetAtt CallenLB.DNSName
-Parameters:
+Parameters: 
   LatestAmiId:
-    Type: 'AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>'
-    Default: '/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2'
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
 Resources:
   CallenS3: 
     Type: AWS::S3::Bucket
@@ -16,20 +16,33 @@ Resources:
     Type: AWS::SQS::Queue
     Properties: 
       QueueName: YonoCallen
+
+  CalleLBSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: LoadBalancerille SG.
+      GroupName: CalleLBSG
+      VpcId: vpc-7da4b71b
+      SecurityGroupIngress:
+      - FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+        CidrIp: 109.204.206.210/32
   CallenEC2:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: t3.nano
-      #Name: CallenEC2
+
   CallenLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties: 
       Name: CallenLB
       Scheme: internet-facing
       Subnets: 
-      - subnet-0deb6257
-      - subnet-1629765e
-      - subnet-7b95d91d
-
- 
+        - subnet-0deb6257
+        - subnet-1629765e
+        - subnet-7b95d91d
+      SecurityGroups: 
+      - !Ref CalleLBSG
+      
