@@ -28,11 +28,30 @@ Resources:
         IpProtocol: tcp
         ToPort: 80
         CidrIp: 109.204.206.210/32
+
+  CallEC2SG:
+    Type: AWS::EC2::SecurityGroup
+    Properties: 
+      GroupDescription: EC2:lle SG.
+      GroupName: CallenEC2SG
+      VpcId: vpc-7da4b71b
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !Ref CalleLBSG
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 109.204.206.210/32    
+
   CallenEC2:
     Type: AWS::EC2::Instance
     Properties:
       ImageId: !Ref LatestAmiId
       InstanceType: t3.nano
+      SecurityGroupIds: 
+        - !GetAtt CallEC2SG.GroupId
 
   CallenLB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
