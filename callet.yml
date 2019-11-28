@@ -1,17 +1,24 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: Callen ensimmainen PilviMuotoilu
+
 Outputs:
+  
   ALBoutput: 
     Value: !GetAtt CallenLB.DNSName
+
 Parameters: 
+  
   LatestAmiId:
     Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
     Default: /aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2
+
 Resources:
+
   CallenS3: 
     Type: AWS::S3::Bucket
     Properties: 
       BucketName: callepilviformaatios3
+  
   CallenYono:
     Type: AWS::SQS::Queue
     Properties: 
@@ -24,10 +31,74 @@ Resources:
       GroupName: CalleLBSG
       VpcId: vpc-7da4b71b
       SecurityGroupIngress:
-      - FromPort: 80
-        IpProtocol: tcp
-        ToPort: 80
-        CidrIp: 109.204.206.210/32
+        - FromPort: 80
+          IpProtocol: tcp
+          ToPort: 80
+          CidrIp: 109.204.206.210/32
+
+  CallenLB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties: 
+      Name: CallenLB
+      Scheme: internet-facing
+      Subnets: 
+        - subnet-0deb6257
+        - subnet-1629765e
+        - subnet-7b95d91d
+      SecurityGroups: 
+        - !Ref CalleLBSG
+
+  ELBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties: 
+      DefaultActions: 
+        - Type: forward
+          TargetGroupArn: !Ref ELBTargetG
+      LoadBalancerArn: arn:aws:elasticloadbalancing:eu-west-1:054683117628:loadbalancer/app/CallenLB/f3781096acf7bcb2
+      Port: 80
+      Protocol: HTTP
+
+  ELBTargetG:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties: 
+      VpcId: vpc-7da4b71b
+      Port: 80
+      Protocol: HTTP
+
+  CalleAutoScale:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties: 
+      AutoScalingGroupName: Callen Autoscalet
+      DesiredCapacity: 2
+      LaunchConfigurationName: !Ref CallenConffa
+      MaxSize: 2
+      MinSize: 2
+      Tags: 
+        - Key: 'Name'
+          Value: 'callen-myllyt'
+          PropagateAtLaunch: "true"
+      TargetGroupARNs: 
+        - !Ref ELBTargetG
+      VPCZoneIdentifier: 
+        - subnet-0deb6257
+        - subnet-1629765e
+        - subnet-7b95d91d
+
+  CallenConffa:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties: 
+      ImageId: !Ref LatestAmiId
+      InstanceType: t3.nano
+      SecurityGroups: 
+        - !GetAtt CallEC2SG.GroupId
+      UserData: 
+        Fn::Base64:
+          Fn::Join:
+            - "\n"
+            - - "#!/bin/bash"
+              - "amazon-linux-extras install epel"
+              - "amazon-linux-extras install nginx1"
+              - "systemctl start nginx"
 
   CallEC2SG:
     Type: AWS::EC2::SecurityGroup
@@ -44,23 +115,3 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 109.204.206.210/32    
-
-  CallenEC2:
-    Type: AWS::EC2::Instance
-    Properties:
-      ImageId: !Ref LatestAmiId
-      InstanceType: t3.nano
-      SecurityGroupIds: 
-        - !GetAtt CallEC2SG.GroupId
-
-  CallenLB:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties: 
-      Name: CallenLB
-      Scheme: internet-facing
-      Subnets: 
-        - subnet-0deb6257
-        - subnet-1629765e
-        - subnet-7b95d91d
-      SecurityGroups: 
-      - !Ref CalleLBSG
